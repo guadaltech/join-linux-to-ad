@@ -1,0 +1,100 @@
+# - name: Update all packages to the latest version
+#   apt:
+#     upgrade: yes
+#     update_cache: yes
+
+- name: Installation of packages
+  apt:
+    name: "{{ packages }}"
+    update_cache: yes
+
+- name: Backup of security and changes in the file of nsswitch
+  shell: mv /etc/krb5.conf /etc/krb5.bk.conf
+
+- name: Copy file of kerberos for node linux
+  template:
+    src: krb5.conf.j2
+    dest: /etc/krb5.conf
+
+- name: Define time with command ntpdate
+  command: "{{ item }}"
+  with_items:
+    - ntpdate -q {{ server_kerberos }}
+    - ntpdate {{ server_kerberos }}
+
+- name: Copy file of realmd for node linux
+  template:
+    src: realmd.conf.j2
+    dest: /etc/realmd.conf
+
+- name: Command Kinit
+  shell: echo {{ pwd_user_domain }} | kinit {{ user_domain }}@{{ kerberos_realm }}
+
+- name: List of ticket
+  shell: klist
+
+- name: Join linux with Active Directory
+  shell: realm --verbose join {{ domain }} --user-principal={{ host_client }}/{{ user_domain }}@{{ kerberos_realm }} --unattended
+
+- name: Copy file of sssd for node linux
+  template:
+    src: sssd.conf.j2
+    dest: /etc/sssd/sssd.conf
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Restart services of sssd
+  service:
+    name: sssd
+    state: restarted
+
+- name: Change configuration of authentication in file common-session
+  lineinfile:
+    path: /etc/pam.d/common-session
+    insertafter: 'pam_sss\.so'
+    line: 'session required pam_mkhomedir.so skel=/etc/skel/ umask=0077'
+
+- name: Backup of security for to deploy the new file
+  shell: mv /etc/samba/smb.conf /etc/samba/smb.bk.conf
+
+- name: Add new file with changes for this deploy
+  template:
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+
+- name: list klist
+  shell: klist -kt
+
+- name: Backup of security and changes in the file of nsswitch
+  shell: mv /etc/nsswitch.conf /etc/nsswitch.bk.conf
+
+- name: Add new file with changes for this deploy
+  template:
+    src: nsswitch.conf.j2
+    dest: /etc/nsswitch.conf
+
+- name: Backup of security and changes in the file of sudoers
+  shell: mv /etc/sudoers /etc/sudoers.bk
+
+- name: Add new file with changes for this deploy
+  template:
+    src: sudoers.j2
+    dest: /etc/sudoers
+
+- name: Configuration of Lightdm
+  lineinfile:
+    path: /usr/share/lightdm/lightdm.conf.d/50-ubuntu.conf
+    insertafter: '^\[Seat:\*\]'
+    line: 'greeter-show-manual-login=true'
+
+- name: Add user of domain for can to loggin how superuser
+  shell: usermod -aG sudo {{ user_domain }}
+
+- name: Reboot node for apply the changes
+  reboot:
+
+- name: Restart services of sssd
+  service:
+    name: sssd
+    state: restarted

@@ -1,0 +1,11 @@
+galaxy_info:
+  author: Guadaltech
+  description: Join Ubuntu to Windows Active Directory ( Kerberos + Realmd + SAMBA + SSSD)
+  license: license (GPLv2, CC-BY, etc)
+  min_ansible_version: 2.4
+  platforms:
+    - name: Ubuntu
+      versions:
+        - Bionic
+  galaxy_tags: ['kerberos', 'samba', 'sssd', 'domain', 'ubuntu', 'realmd']
+dependencies: []

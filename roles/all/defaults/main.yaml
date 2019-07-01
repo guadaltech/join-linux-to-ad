@@ -1,0 +1,14 @@
+---
+packages:
+  - krb5-user
+  - ntpdate
+  - realmd
+  - adcli
+  - packagekit
+  - samba-common
+  - samba-common-bin
+  - samba-libs
+  - sssd
+  - sssd-tools
+  - libnss-sss
+  - libpam-sss

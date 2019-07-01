@@ -1,0 +1,55 @@
+- hosts: all
+  become: yes
+  tasks:
+  - name: Delete line in file Hosts
+    lineinfile:
+      path: /etc/hosts
+      regexp: '^127\.0\.1\.1'
+      state: absent
+
+  - name: Insert localhost in file Hosts
+    lineinfile:
+      path: /etc/hosts
+      insertafter: '^127\.0\.0\.1'
+      line: '127.0.1.1 {{ host_client }}.{{ domain }} {{ host_client }}'
+
+  - name: Insert DNS in file Hosts
+    lineinfile:
+      path: /etc/hosts
+      insertafter: '^127\.0\.1\.1'
+      line: '{{ ip_dns }} {{ domain }}'
+
+  - name: Replace name of host
+    shell: |
+      echo "{{ host_client }}" > /etc/hostname
+      hostnamectl set-hostname "{{ host_client }}"
+      hostnamectl
+      exit 0
+
+  - name: Stop and Disable service of cache DNS
+    service:
+      name: systemd-resolved
+      state: stopped
+      enabled: no
+
+  - name: Change configuration of DNS in file NetworkManager
+    lineinfile:
+      path: /etc/NetworkManager/NetworkManager.conf
+      insertafter: '^\[main\]'
+      line: 'dns=default'
+
+  - name: Delete file resolv.conf
+    file:
+      path: /etc/resolv.conf
+      state : absent
+
+  - name: Restart services of network interface
+    service:
+      name: "{{ item }}"
+      state: restarted
+    with_items:
+      - networking
+      - network-manager
+
+  - name: Reboot node for apply the changes of hostname
+    reboot:
