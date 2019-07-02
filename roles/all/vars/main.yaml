@@ -1,0 +1,4 @@
+---
+os_name: "Ubuntu"
+os_version: "18.04"
+group_domain: "group\ domain\ for\ sudoers"

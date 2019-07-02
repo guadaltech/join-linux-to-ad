@@ -1,0 +1,13 @@
+---
+all: true
+
+domain: "DOMAIN.LOCAL"
+server_kerberos: "domain.local"
+kerberos_realm: "DOMAIN.LOCAL"
+workgroup: "WORKGROUP"
+ip_dns: "10.40.115.2"
+user_domain_admin: "admlinux"
+user_domain: "admlinux"
+pwd_user_domain: "Temporal01"
+host_client: "hosnameclienttoapply"
+group_domain: "group\ domain\ for\ sudoers"

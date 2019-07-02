@@ -1,0 +1,17 @@
+[users]
+default-home = /home/{{ workgroup }}/%U
+default-shell = /bin/bash
+
+[active-directory]
+default-client = sssd
+os-name = {{ os_name }}
+os-version = {{ os_version }}
+
+[service]
+automatic-install = no
+
+[{{ domain }}]
+fully-qualified-names = no
+automatic-id-mapping = yes
+user-principal = yes
+manage-system = no

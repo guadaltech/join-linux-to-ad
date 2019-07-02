@@ -1,0 +1,25 @@
+[libdefaults]
+	default_realm = {{ kerberos_realm }}
+	kdc_timesync = 1
+	ccache_type = 4
+	forwardable = true
+	proxiable = true
+    default_keytab_name = FILE:/etc/krb5.keytab
+
+	fcc-mit-ticketflags = true
+
+[realms]
+	{{ kerberos_realm }} = {
+		kdc = {{ server_kerberos }}
+		admin_server = {{ server_kerberos }}
+		default_admin = {{ server_kerberos }}
+	}
+
+[domain_realm]
+	.{{ kerberos_realm|lower }} = {{ kerberos_realm }}
+	{{ kerberos_realm|lower }} = {{ kerberos_realm }}
+
+[logging]
+ 	default = FILE:/var/log/krb5libs.log
+ 	kdc = FILE:/var/log/krb5kdc.log
+ 	admin_server = FILE:/var/log/kadmind.log
