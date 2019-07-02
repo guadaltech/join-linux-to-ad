@@ -16,6 +16,6 @@ By last, We deploy the next command for start the process of join of operative s
 ansible-playbook -i inventory/inventory.ini --become --become-user=root ansible.yaml -vvv --limit all
 ```
 
-Image of scenery
+Image of scenery:
 
 ![Alt Text](/images_readme/ansible_scenario.png)
