@@ -1,8 +1,4 @@
-# - name: Update all packages to the latest version
-#   apt:
-#     upgrade: yes
-#     update_cache: yes
-
+---
 - name: Installation of packages
   apt:
     name: "{{ packages }}"
@@ -44,10 +40,28 @@
     group: root
     mode: 0600
 
-- name: Restart services of sssd
+- name:  Restart services of sssd
   service:
     name: sssd
     state: restarted
+    enabled: yes
+
+- name: Backup of security and changes in the file of sudoers
+  shell: mv /etc/sudoers /etc/sudoers.bk
+
+- name: Add new file with changes for this deploy
+  template:
+    src: sudoers.j2
+    dest: /etc/sudoers
+
+- name: Configuration of Lightdm
+  lineinfile:
+    path: /usr/share/lightdm/lightdm.conf.d/50-ubuntu.conf
+    insertafter: '^\[Seat:\*\]'
+    line: 'greeter-show-manual-login=true'
+
+- name: Add user of domain for can to loggin how superuser
+  shell: usermod -aG sudo {{ user_domain }}
 
 - name: Change configuration of authentication in file common-session
   lineinfile:
@@ -74,27 +88,6 @@
     src: nsswitch.conf.j2
     dest: /etc/nsswitch.conf
 
-- name: Backup of security and changes in the file of sudoers
-  shell: mv /etc/sudoers /etc/sudoers.bk
-
-- name: Add new file with changes for this deploy
-  template:
-    src: sudoers.j2
-    dest: /etc/sudoers
-
-- name: Configuration of Lightdm
-  lineinfile:
-    path: /usr/share/lightdm/lightdm.conf.d/50-ubuntu.conf
-    insertafter: '^\[Seat:\*\]'
-    line: 'greeter-show-manual-login=true'
-
-- name: Add user of domain for can to loggin how superuser
-  shell: usermod -aG sudo {{ user_domain }}
-
 - name: Reboot node for apply the changes
   reboot:
 
-- name: Restart services of sssd
-  service:
-    name: sssd
-    state: restarted
