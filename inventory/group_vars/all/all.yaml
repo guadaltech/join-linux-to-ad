@@ -1,3 +1,4 @@
+
 ---
 all: true
 
@@ -10,4 +11,4 @@ user_domain_admin: "admlinux"
 user_domain: "admlinux"
 pwd_user_domain: "Temporal01"
 host_client: "hosnameclienttoapply"
-group_domain: "group\ domain\ for\ sudoers"
+group_domain: 'group\ domain\ for\ sudoers'
