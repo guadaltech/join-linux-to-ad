@@ -3,34 +3,43 @@
   apt:
     name: "{{ packages }}"
     update_cache: yes
+  tags: install all packages
 
 - name: Backup of security and changes in the file of nsswitch
   shell: mv /etc/krb5.conf /etc/krb5.bk.conf
+  tags: backup conf of kerberos
 
 - name: Copy file of kerberos for node linux
   template:
     src: krb5.conf.j2
     dest: /etc/krb5.conf
+  tags: copy conf of kerberos
+
 
 - name: Define time with command ntpdate
   command: "{{ item }}"
   with_items:
     - ntpdate -q {{ server_kerberos }}
     - ntpdate {{ server_kerberos }}
+  tags: change time of node
 
 - name: Copy file of realmd for node linux
   template:
     src: realmd.conf.j2
     dest: /etc/realmd.conf
+  tags: copy file realmd
 
 - name: Command Kinit
   shell: echo {{ pwd_user_domain }} | kinit {{ user_domain }}@{{ kerberos_realm }}
+  tags: generate ticket kerberos
 
 - name: List of ticket
   shell: klist
+  tags: list ticket kerberos
 
 - name: Join linux with Active Directory
   shell: realm --verbose join {{ domain }} --user-principal={{ host_client }}/{{ user_domain }}@{{ kerberos_realm }} --unattended
+  tags: join node in active directory
 
 - name: Copy file of sssd for node linux
   template:
@@ -39,55 +48,68 @@
     owner: root
     group: root
     mode: 0600
+  tags: copy file sssd
 
 - name:  Restart services of sssd
   service:
     name: sssd
     state: restarted
     enabled: yes
+  tags: restart service sssd
 
 - name: Backup of security and changes in the file of sudoers
   shell: mv /etc/sudoers /etc/sudoers.bk
+  tags: backup file sudoers
 
 - name: Add new file with changes for this deploy
   template:
     src: sudoers.j2
     dest: /etc/sudoers
+  tags: copy file sudoers
 
 - name: Configuration of Lightdm
   lineinfile:
     path: /usr/share/lightdm/lightdm.conf.d/50-ubuntu.conf
     insertafter: '^\[Seat:\*\]'
     line: 'greeter-show-manual-login=true'
+  tags: configuration file for login of lightdm
 
-- name: Add user of domain for can to loggin how superuser
+- name: Add user of domain for can to login how superuser
   shell: usermod -aG sudo {{ user_domain }}
+  tags: add user of domain for can login how superuser
 
 - name: Change configuration of authentication in file common-session
   lineinfile:
     path: /etc/pam.d/common-session
     insertafter: 'pam_sss\.so'
     line: 'session required pam_mkhomedir.so skel=/etc/skel/ umask=0077'
+  tags: changes configuration of authentication
 
 - name: Backup of security for to deploy the new file
   shell: mv /etc/samba/smb.conf /etc/samba/smb.bk.conf
+  tags: backup file smb.conf
 
 - name: Add new file with changes for this deploy
   template:
     src: smb.conf.j2
     dest: /etc/samba/smb.conf
+  tags: copy file smb with changes
 
 - name: list klist
   shell: klist -kt
+  tags: list tickets kerberos
 
 - name: Backup of security and changes in the file of nsswitch
   shell: mv /etc/nsswitch.conf /etc/nsswitch.bk.conf
+  tags: backup file nsswitch
 
 - name: Add new file with changes for this deploy
   template:
     src: nsswitch.conf.j2
     dest: /etc/nsswitch.conf
+  tags: copy file nsswitch
 
 - name: Reboot node for apply the changes
   reboot:
+  tags: reboot node client
 
